@@ -1,13 +1,10 @@
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.json.JSONString;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 import java.util.*;
 
 // "static void main" must be defined in a public class.
@@ -37,12 +34,25 @@ public class WF {
             if (responseCode == HttpURLConnection.HTTP_OK) {
                 BufferedReader in = new BufferedReader(new InputStreamReader(
                         con.getInputStream()));
-                JSONObject obj = new JSONObject(in);
-                // Was not able to get this part working.
-                String[] child_ids = obj.getJSONArray("child_node_ids");
+                String inputLine;
+                StringBuffer response = new StringBuffer();
+                while ((inputLine = in.readLine()) != null) {
+                    response.append(inputLine);
+                }
+                String responseString = response.toString();
+                JSONParser jsonParser = new JSONParser();
+                JSONArray jsonAray = (JSONArray) jsonParser.parse(responseString);
+                JSONObject jsonObject = (JSONObject) jsonAray.get(0);
+                JSONArray childIdsArray = (JSONArray) jsonObject.get("child_node_ids");
+
+                String[] child_ids = new String[childIdsArray.size()];
+                for (int i = 0; i < childIdsArray.size(); i++) {
+                    child_ids[i] = childIdsArray.get(i).toString();
+                }
                 in.close();
+
                 for (int i = 0; i < child_ids.length; i++) {
-                    curr_child = child_ids[i];
+                    String curr_child = child_ids[i];
                     if (!visitedNodes.containsKey(curr_child)) {
                         visitedNodes.put(curr_child, 0);
                         nodes.add(curr_child);
@@ -53,18 +63,18 @@ public class WF {
                 System.out.println("GET request not worked");
             }
 
-            String mostFreq = "";
-            int maxFreq = 0;
-            for (String node : visitedNodes.keySet()) {
-                int freq = visitedNodes.get(node);
-                if (freq > maxFreq) {
-                    mostFreq = node;
-                    maxFreq = freq;
-                }
-            }
-
-            System.out.println("1. Total number of unique nodes = " + visitedNodes.size());
-            System.out.println("2. Node ID shared most = " + mostFreq);
         }
+        String mostFreq = "";
+        int maxFreq = 0;
+        for (String node : visitedNodes.keySet()) {
+            int freq = visitedNodes.get(node);
+            if (freq > maxFreq) {
+                mostFreq = node;
+                maxFreq = freq;
+            }
+        }
+
+        System.out.println("1. Total number of unique nodes = " + visitedNodes.size());
+        System.out.println("2. Node ID shared most = " + mostFreq);
     }
 }
