@@ -4,10 +4,14 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import org.json.simple.JSONObject;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.json.JSONString;
+import java.util.*;
 
 // "static void main" must be defined in a public class.
-public class Main {
+public class WF {
 
     private static String mainURL = "https://nodes-on-nodes-challenge.herokuapp.com/nodes/";
 
@@ -25,8 +29,8 @@ public class Main {
         nodes.add(nodeId);
         visitedNodes.put(nodeId, 1);
         while (!nodes.isEmpty()) {
-            String curNode = nodes.pop();
-            String currUrl = new URL(mainURL + curNode);
+            String curNode = nodes.remove();
+            URL currUrl = new URL(mainURL + curNode);
             HttpURLConnection con = (HttpURLConnection) currUrl.openConnection();
             con.setRequestMethod("GET");
             int responseCode = con.getResponseCode();
@@ -34,6 +38,7 @@ public class Main {
                 BufferedReader in = new BufferedReader(new InputStreamReader(
                         con.getInputStream()));
                 JSONObject obj = new JSONObject(in);
+                // Was not able to get this part working.
                 String[] child_ids = obj.getJSONArray("child_node_ids");
                 in.close();
                 for (int i = 0; i < child_ids.length; i++) {
